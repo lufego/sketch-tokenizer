@@ -1,8 +1,15 @@
 # sketch-tokenizer
 
-https://image.ibb.co/cyYXXT/Screen_Shot_2018_07_12_at_17_08_15.png
+![Logo](https://image.ibb.co/cyYXXT/Screen_Shot_2018_07_12_at_17_08_15.png
+)
 
 Generates the design token tag with one click.
+
+## Demo
+
+![Gif](https://image.ibb.co/hZjECT/example.gif
+)
+
 
 ## Usage
 
