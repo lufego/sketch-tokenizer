@@ -1,0 +1,37 @@
+{
+  "compatibleVersion": 3,
+  "bundleVersion": 1,
+  "icon": "icon.png",
+  "commands": [
+    {
+      "name": "Fill color",
+      "identifier": "fill-color",
+      "shortcut": "ctrl shift w",
+      "script": "get-fill-color.js"
+    },
+    {
+      "name": "Border color",
+      "identifier": "border-color",
+      "shortcut": "ctrl shift b",
+      "script": "get-border-color.js"
+    }
+  ],
+  "menu": {
+    "title": "Tokenizer",
+    "items": [
+      {
+        "title": "Get color variable",
+        "items": [
+          "fill-color",
+          "border-color"
+        ]
+      }
+    ]
+  },
+  "version": "0.1.0",
+  "name": "sketch-tokenizer",
+  "disableCocoaScriptPreprocessor": true,
+  "appcast": "https://raw.githubusercontent.com//master/.appcast.xml",
+  "author": "lufego",
+  "authorEmail": "luis.gomes@commercetools.de"
+}

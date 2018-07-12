@@ -1,0 +1,31 @@
+{
+  "compatibleVersion": 3,
+  "bundleVersion": 1,
+  "icon": "icon.png",
+  "commands": [
+    {
+      "name": "Fill color",
+      "identifier": "fill-color",
+      "shortcut": "ctrl shift w",
+      "script": "./get-fill-color.js"
+    },
+    {
+      "name": "Border color",
+      "identifier": "border-color",
+      "shortcut": "ctrl shift b",
+      "script": "./get-border-color.js"
+    }
+  ],
+  "menu" : {
+  "title": "Tokenizer",
+  "items": [
+    {
+       "title": "Get color variable",
+       "items": [
+         "fill-color",
+         "border-color"
+       ]
+     }
+  ]
+}
+}
