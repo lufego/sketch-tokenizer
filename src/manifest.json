@@ -14,11 +14,18 @@
       "identifier": "border-color",
       "shortcut": "ctrl shift b",
       "script": "./get-border-color.js"
+    },
+    {
+      "name": "Import base colors file...",
+      "identifier": "import-base-colors-file",
+      "shortcut": "ctrl shift i",
+      "script": "./import-base-colors.js"
     }
   ],
   "menu" : {
   "title": "Tokenizer",
   "items": [
+    "import-base-colors-file",
     {
        "title": "Get color variable",
        "items": [
