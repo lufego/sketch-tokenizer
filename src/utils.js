@@ -1,46 +1,46 @@
 const colorVariables = {
   baseColors: {
     green: {
-      default: "#14B39D",
-      25: "#0B8171",
-      40: "#19CCB3",
-      85: "#B4FFF6",
-      95: "#E6FFFC",
+      default: "#00B39E",
+      25: "25%",
+      40: "40%",
+      85: "85%",
+      95: "95%",
     },
     white: {
       default: "#FFFFFF"
     },
     navy: {
-      default: "#1D3D45",
-      30: "#2E5768",
-      40: "#407A8B",
-      95: "#EEF4F6",
-      98 : "#F9FBFB"
+      default: "#213C45",
+      30: "30%",
+      40: "40%",
+      95: "95%",
+      98 : "98%"
     },
     blue: {
-      default: "#0090E0",
-      95: "#B2E3FF",
-      98: "#E5F6FF"
+      default: "#078CDF",
+      95: "95%",
+      98: "98%"
     },
     gray: {
       default: "#CCCCCC",
-      60: "#999999",
-      90: "#E6E6E6",
-      95: "#F2F2F2"
+      60: "60%",
+      90: "90%",
+      95: "95%"
     },
     orange: {
-      default: "#F1690E",
-      95: "#FEF0E7"
+      default: "#F16D0E",
+      95: "95%"
     },
     red: {
-      default: "#E50051",
-      95: "#FFE5EE"
+      default: "#E60050",
+      95: "95%"
     },
     purple: {
-      default: "#B26DFF",
+      default: "#B866FF",
     },
     black: {
-      default: "#181818",
+      default: "#1A1A1A",
     }
   }
 }
@@ -52,7 +52,7 @@ export function insertTokenText({x, y, width}, layerName, title, text, isBorder 
   // pass the position to the text layer to be inserted
   textWithToken.frame().x = x + width + 100;
   textWithToken.frame().midY = y;
-  
+
   // pass the position to quote line
   createQuoteLine(x, y, width, isBorder);
 
@@ -61,10 +61,10 @@ export function insertTokenText({x, y, width}, layerName, title, text, isBorder 
 }
 
 export function createQuoteLine(x, y, elementWidth, isBorder) {
-  
+
   // if its a border, we want the quote line to touch it, otherwise touch fill
   const touchOffset = isBorder ? 0 : 5
-  
+
   // if its a border, we want the quote line to start from the same point as fill quoted line
   const startPointOffset = isBorder ? 30 : 0
   var path = NSBezierPath.bezierPath();
@@ -93,7 +93,6 @@ export function getBorderHexColor(selection) {
   return colorHex
 }
 
-
 export function getRGBColor (type, layer) {
   var color
 
@@ -118,16 +117,6 @@ export function colorChecker(color, callback) {
   }
 }
 
-// Hex to Color - helper export function
-export function hexToColor(hex, alpha) {
-    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex),
-        red = parseInt(result[1], 16) / 255,
-        green = parseInt(result[2], 16) / 255,
-        blue = parseInt(result[3], 16) / 255,
-        alpha = (typeof alpha !== 'undefined') ? alpha : 1;
-    return NSColor.colorWithCalibratedRed_green_blue_alpha(red, green, blue, alpha)
-}
-
 export function getBaseColorsVariablesMapping() {
   const obj = colorVariables.baseColors
   const colorNames = {}
@@ -140,11 +129,13 @@ export function getBaseColorsVariablesMapping() {
     Object.keys(colorGroup).forEach(variation => {
       // filters out default values
       if (variation !== 'default') {
-        colorNames[colorGroup[variation]] = '--color-' + colorGroupName + '-' + variation;
+        const variationName = colorGroup[variation]
+        const variationNameWithoutPercetageSign = variationName.replace('%', '');
+        colorNames[transformColorLightness(colorGroup.default, variationNameWithoutPercetageSign).toUpperCase()] = '--color-' + colorGroupName + '-' + variation;
       }
     })
   })
-
+  console.log('colorNames', colorNames)
   return colorNames
 }
 
@@ -154,4 +145,98 @@ export function createTextLayer(name, stringValue) {
     textLayer.name = name
     textLayer.setTextColor(MSColor.colorWithRGBADictionary(quoteColor))
     return textLayer;
+}
+
+// Color converters
+
+function transformColorLightness(hex, lightness) {
+    const hslColor = hexToHsl(hex, lightness);
+    const hexColor = hslToHex(hslColor);
+    return hexColor;
+}
+
+function hexToHsl(hex, lightness){
+  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+
+    var r = parseInt(result[1], 16);
+    var g = parseInt(result[2], 16);
+    var b = parseInt(result[3], 16);
+
+    r /= 255, g /= 255, b /= 255;
+    var max = Math.max(r, g, b), min = Math.min(r, g, b);
+    var h, s, l = (max + min) / 2;
+
+    if(max == min){
+        h = s = 0; // achromatic
+    } else {
+        var d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch(max) {
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+    }
+
+    h = Math.round(360*h);
+    s = s*100;
+    s = Math.round(s);
+    l = l*100;
+    l = lightness ? lightness : Math.round(l);
+
+  return [h,s,l]
+}
+
+function hslToHex(hsl){
+    const rgbColor = hslToRgb(hsl[0], hsl[1], hsl[2])
+    const r = rgbColor[0];
+    const g = rgbColor[1];
+    const b = rgbColor[2];
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+
+function hslToRgb(h, s, l){
+    var m1, m2, hue;
+	var r, g, b
+	s /=100;
+	l /= 100;
+	if (s == 0)
+		r = g = b = (l * 255);
+	else {
+		if (l <= 0.5)
+			m2 = l * (s + 1);
+		else
+			m2 = l + s - l * s;
+		m1 = l * 2 - m2;
+		hue = h / 360;
+		r = Math.round(hueToRgb(m1, m2, hue + 1/3));
+		g = Math.round(hueToRgb(m1, m2, hue));
+		b = Math.round(hueToRgb(m1, m2, hue - 1/3));
+	}
+
+  const roundedR = Math.round(r);
+  const roundedG = Math.round(g);
+  const roundedB = Math.round(b);
+
+	return [roundedR, roundedG, roundedB]
+}
+
+function hueToRgb(m1, m2, hue) {
+	var v;
+	if (hue < 0)
+		hue += 1;
+	else if (hue > 1)
+		hue -= 1;
+
+	if (6 * hue < 1)
+		v = m1 + (m2 - m1) * hue * 6;
+	else if (2 * hue < 1)
+		v = m2;
+	else if (3 * hue < 2)
+		v = m1 + (m2 - m1) * (2/3 - hue) * 6;
+	else
+		v = m1;
+
+	return 255 * v;
 }

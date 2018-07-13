@@ -25,9 +25,6 @@ export default function(context) {
   Utils.colorChecker(color, callback)
 }
 
-
-
-
 function getFillColorVariable(selection, text) {
   // gets the position of selection
   var x = selection[0].frame().x();
