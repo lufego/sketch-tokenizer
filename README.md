@@ -17,7 +17,7 @@ Generates the design token with few clicks.
 
 ## Usage
 
-1. Provide a JSON file with your project's url(decision base colors)[https://medium.com/eightshapes-llc/tokens-in-design-systems-25dd82d58421]
+1. Provide a JSON file with your project's [decision base colors](https://medium.com/eightshapes-llc/tokens-in-design-systems-25dd82d58421)
 
 ````json
 // variations are based on the color`s lightness channel
