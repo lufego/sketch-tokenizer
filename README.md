@@ -2,7 +2,7 @@
 
 <img src="https://image.ibb.co/cyYXXT/Screen_Shot_2018_07_12_at_17_08_15.png" width="200" />
 
-Generates the design token with few clicks.
+Maps your hardcoded colors values to actual design tokens and adds a label to your layout.
 
 > If you work with design tokens in your project, one of the issues you might face is receiving layouts and having to inspecting them to find out which design token corresponds to certain HEX value.
 
