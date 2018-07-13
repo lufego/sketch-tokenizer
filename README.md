@@ -13,7 +13,7 @@ Maps your hardcoded colors values to actual design tokens and adds a label to yo
 
 ## Demo
 
-<img src="http://g.recordit.co/Pw1Ut79guk.gif" width="500" />
+<img src="http://g.recordit.co/Pw1Ut79guk.gif" width="800" />
 
 ## Usage
 
@@ -46,7 +46,7 @@ Maps your hardcoded colors values to actual design tokens and adds a label to yo
 
 2. Import this file on `Plugins > Tokenizer > Import base colors file...`
 
-![how-to-import](http://g.recordit.co/FK9uXWnFa7.gif)
+<img src="http://g.recordit.co/FK9uXWnFa7.gif" width="800" />
 
 3. Select an object in the Artboard
 
