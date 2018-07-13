@@ -2,14 +2,15 @@
 
 <img src="https://image.ibb.co/cyYXXT/Screen_Shot_2018_07_12_at_17_08_15.png" width="200" />
 
-Maps your hardcoded colors values to actual design tokens and adds a label to your layout.
+> Maps your hardcoded colors values to actual design tokens and adds a label to your layout.
 
-> If you work with design tokens in your project, one of the issues you might face is receiving layouts and having to inspecting them to find out which design token corresponds to certain HEX value.
+If you work with design tokens in your project, one of the issues you might face is receiving layouts and having to inspecting them to find out which design token corresponds to certain HEX value.
 
-> That's time consuming, and would be really good to receive such layouts with some "text labels" indicating which design token applies to certain color.
+That's time consuming, and would be really good to receive such layouts with some "text labels" indicating which design token applies to certain color.
 
-> This plugin comes to make both Designers and Developers's lives easier: you provide a file with your main colors and their variations, and the plugin will take care of mapping those to design tokens.
+This plugin comes to make both Designers and Developers's lives easier: you provide a file with your main colors and their variations, and the plugin will take care of mapping those to design tokens.
 
+**TLDR;:** Designers hands over screens with the `design tokens` developers should use for certain elements. That means: no more time wasted on inspecting hardcoded values.
 
 ## Demo
 
