@@ -5,34 +5,50 @@
   "commands": [
     {
       "name": "Fill color",
-      "identifier": "fill-color",
+      "identifier": "base-fill-color",
       "shortcut": "ctrl shift w",
-      "script": "./get-fill-color.js"
+      "script": "./getters/base-colors/get-base-fill-color.js"
     },
     {
       "name": "Border color",
-      "identifier": "border-color",
+      "identifier": "base-border-color",
       "shortcut": "ctrl shift b",
-      "script": "./get-border-color.js"
+      "script": "./getters/base-colors/get-base-border-color.js"
     },
     {
-      "name": "Import base colors file...",
-      "identifier": "import-base-colors-file",
+      "name": "Import decisions file...",
+      "identifier": "import-decisions-file",
       "shortcut": "ctrl shift i",
-      "script": "./import-base-colors.js"
+      "script": "./import-decisions-file.js"
+    },
+    {
+      "name": "Input",
+      "identifier": "token-border-color-input",
+      "script": "./getters/tokens/get-token-border-color-input.js"
     }
   ],
-  "menu" : {
-  "title": "Tokenizer",
-  "items": [
-    "import-base-colors-file",
-    {
-       "title": "Get color variable",
-       "items": [
-         "fill-color",
-         "border-color"
-       ]
-     }
-  ]
-}
+  "menu": {
+    "title": "Tokenizer",
+    "items": [
+      "import-decisions-file",
+      {
+        "title": "Identify",
+        "items": [
+          {
+            "title": "Base color",
+            "items": ["base-fill-color", "base-border-color"]
+          },
+          {
+            "title": "Token",
+            "items": [
+              {
+                "title": "Border color",
+                "items": ["token-border-color-input"]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
 }

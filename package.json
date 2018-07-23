@@ -26,6 +26,7 @@
     "fs": "0.0.1-security",
     "path": "^0.12.7",
     "requirejs": "^2.3.5",
+    "sketch": "^0.2.0",
     "yaml-js": "^0.2.3"
   }
 }

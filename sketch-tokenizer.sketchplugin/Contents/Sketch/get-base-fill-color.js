@@ -86,21 +86,21 @@ var exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/get-border-color.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/getters/base-colors/get-base-fill-color.js");
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "./src/get-border-color.js":
-/*!*********************************!*\
-  !*** ./src/get-border-color.js ***!
-  \*********************************/
+/***/ "./src/getters/base-colors/get-base-fill-color.js":
+/*!********************************************************!*\
+  !*** ./src/getters/base-colors/get-base-fill-color.js ***!
+  \********************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-var Utils = __webpack_require__(/*! ./utils.js */ "./src/utils.js"); // My plugin (command shift s)
+var Utils = __webpack_require__(/*! ./../../utils.js */ "./src/utils.js"); // My plugin (command shift s)
 
 
 /* harmony default export */ __webpack_exports__["default"] = (function (context) {
@@ -117,28 +117,25 @@ var Utils = __webpack_require__(/*! ./utils.js */ "./src/utils.js"); // My plugi
   }
 
   var colorMapping = Utils.getBaseColorsVariablesMapping();
-  var currentSelectedColor = Utils.getBorderHexColor(selection).toString().toUpperCase();
-  var color = colorMapping["#" + currentSelectedColor];
+  console.log('colorMapping', colorMapping);
+  var currentSelectedColor = Utils.getFillHexColor(selection).toString().toUpperCase();
+  var color = colorMapping['#' + currentSelectedColor];
 
   var callback = function callback() {
-    return getBorderColorVariable(selection, color);
+    return getFillColorVariable(selection, color);
   }; // checks if color belongs to UI Kit, if not returns an error
 
 
   Utils.colorChecker(color, callback);
 });
 
-function getBorderColorVariable(selection, text) {
-  // gets the position of selection
-  var x = selection[0].frame().x();
-  var selectedElementWidth = selection[0].frame().width();
-  var midY = selection[0].frame().midY();
+function getFillColorVariable(selection, text) {
   var position = {
-    x: x,
-    y: midY - 30,
-    width: selectedElementWidth
+    x: selection[0].absoluteRect().rulerX(),
+    y: selection[0].absoluteRect().rulerY(),
+    width: selection[0].absoluteRect().width()
   };
-  Utils.insertTokenText(position, 'Token', 'Border color: ', text, true);
+  Utils.insertTokenText(position, 'Token', 'Fill color: ', text);
 }
 
 /***/ }),
@@ -147,12 +144,13 @@ function getBorderColorVariable(selection, text) {
 /*!**********************!*\
   !*** ./src/utils.js ***!
   \**********************/
-/*! exports provided: insertTokenText, createQuoteLine, createTextLayer, getTokenVariable, getFillHexColor, getBorderHexColor, getRGBColor, getHexValueFromColorVariable, colorChecker, getBaseColorsVariablesMapping */
+/*! exports provided: insertTokenText, insertIntoGroup, createQuoteLine, createTextLayer, getTokenVariable, getFillHexColor, getBorderHexColor, getRGBColor, getHexValueFromColorVariable, colorChecker, getBaseColorsVariablesMapping */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "insertTokenText", function() { return insertTokenText; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "insertIntoGroup", function() { return insertIntoGroup; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createQuoteLine", function() { return createQuoteLine; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createTextLayer", function() { return createTextLayer; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getTokenVariable", function() { return getTokenVariable; });
@@ -162,6 +160,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getHexValueFromColorVariable", function() { return getHexValueFromColorVariable; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "colorChecker", function() { return colorChecker; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getBaseColorsVariablesMapping", function() { return getBaseColorsVariablesMapping; });
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+
+function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+
 var quoteColor = {
   r: 1,
   g: 0.369,
@@ -169,33 +175,40 @@ var quoteColor = {
   a: 1
 }; // UI Creators
 
-function insertTokenText(_ref, layerName, title, text) {
-  var x = _ref.x,
-      y = _ref.y,
-      width = _ref.width;
+function insertTokenText(position, layerName, title, text) {
   var isBorder = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
   var textWithToken = createTextLayer(layerName, title + text); // pass the position to the text layer to be inserted
 
-  textWithToken.frame().x = x + width + 100;
-  textWithToken.frame().midY = y; // pass the position to quote line
+  textWithToken.frame().x = +100; // pass the position to quote line
 
-  createQuoteLine(x, y, width, isBorder); // add the layer to the artboar
+  var quoteLine = createQuoteLine(position, isBorder); // var bounds = MSLayerGroup.groupBoundsForContainer(
+  //   MSLayerArray.arrayWithLayers([quoteLine, textWithToken])
+  // );
 
-  context.document.currentPage().addLayers([textWithToken]);
+  insertIntoGroup([textWithToken, quoteLine], position);
 }
-function createQuoteLine(x, y, elementWidth, isBorder) {
+function insertIntoGroup(layers, position) {
+  var groupLayer = MSLayerGroup.new();
+  groupLayer.name = 'Token';
+  groupLayer.layers = _toConsumableArray(layers);
+  groupLayer.frame().x = position.x + position.width;
+  groupLayer.frame().y = position.y;
+  var currentParentGroup = context.document.currentPage().currentArtboard() || context.document.currentPage();
+  currentParentGroup.addLayers([groupLayer]);
+}
+function createQuoteLine(position, isBorder) {
   // if its a border, we want the quote line to touch it, otherwise touch fill
   var touchOffset = isBorder ? 0 : 5; // if its a border, we want the quote line to start from the same point as fill quoted line
 
   var startPointOffset = isBorder ? 30 : 0;
   var path = NSBezierPath.bezierPath();
-  path.moveToPoint(NSMakePoint(x + elementWidth - touchOffset, y + startPointOffset));
-  path.lineToPoint(NSMakePoint(x + elementWidth + 90, y));
+  path.moveToPoint(NSMakePoint(0, 100));
+  path.lineToPoint(NSMakePoint(+100, 0));
   var shape = MSShapeGroup.shapeWithBezierPath(MSPath.pathWithBezierPath(path));
   var border = shape.style().addStylePartOfType(1);
   border.color = MSColor.colorWithRGBADictionary(quoteColor);
   border.thickness = 1;
-  context.document.currentPage().addLayers([shape]);
+  return shape;
 }
 function createTextLayer(name, stringValue) {
   var textLayer = MSTextLayer.new();
@@ -412,4 +425,4 @@ function hue2rgb(m1, m2, hue) {
 }
 that['onRun'] = __skpm_run.bind(this, 'default')
 
-//# sourceMappingURL=get-border-color.js.map
+//# sourceMappingURL=get-base-fill-color.js.map

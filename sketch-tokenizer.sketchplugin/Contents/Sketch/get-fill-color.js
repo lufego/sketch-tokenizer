@@ -117,8 +117,9 @@ var Utils = __webpack_require__(/*! ./utils.js */ "./src/utils.js"); // My plugi
   }
 
   var colorMapping = Utils.getBaseColorsVariablesMapping();
+  console.log('colorMapping', colorMapping);
   var currentSelectedColor = Utils.getFillHexColor(selection).toString().toUpperCase();
-  var color = colorMapping["#" + currentSelectedColor];
+  var color = colorMapping['#' + currentSelectedColor];
 
   var callback = function callback() {
     return getFillColorVariable(selection, color);
@@ -147,71 +148,28 @@ function getFillColorVariable(selection, text) {
 /*!**********************!*\
   !*** ./src/utils.js ***!
   \**********************/
-/*! exports provided: insertTokenText, createQuoteLine, getFillHexColor, getBorderHexColor, getRGBColor, colorChecker, getBaseColorsVariablesMapping, createTextLayer */
+/*! exports provided: insertTokenText, createQuoteLine, createTextLayer, getTokenVariable, getFillHexColor, getBorderHexColor, getRGBColor, getHexValueFromColorVariable, colorChecker, getBaseColorsVariablesMapping */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "insertTokenText", function() { return insertTokenText; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createQuoteLine", function() { return createQuoteLine; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createTextLayer", function() { return createTextLayer; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getTokenVariable", function() { return getTokenVariable; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getFillHexColor", function() { return getFillHexColor; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getBorderHexColor", function() { return getBorderHexColor; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getRGBColor", function() { return getRGBColor; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getHexValueFromColorVariable", function() { return getHexValueFromColorVariable; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "colorChecker", function() { return colorChecker; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getBaseColorsVariablesMapping", function() { return getBaseColorsVariablesMapping; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createTextLayer", function() { return createTextLayer; });
-// const colorVariables = {
-//   baseColors: {
-//     green: {
-//       default: "#00B39E",
-//       25: "25%",
-//       40: "40%",
-//       85: "85%",
-//       95: "95%",
-//     },
-//     white: {
-//       default: "#FFFFFF"
-//     },
-//     navy: {
-//       default: "#213C45",
-//       30: "30%",
-//       40: "40%",
-//       95: "95%",
-//       98 : "98%"
-//     },
-//     blue: {
-//       default: "#078CDF",
-//       95: "95%",
-//       98: "98%"
-//     },
-//     gray: {
-//       default: "#CCCCCC",
-//       60: "60%",
-//       90: "90%",
-//       95: "95%"
-//     },
-//     orange: {
-//       default: "#F16D0E",
-//       95: "95%"
-//     },
-//     red: {
-//       default: "#E60050",
-//       95: "95%"
-//     },
-//     purple: {
-//       default: "#B866FF",
-//     },
-//     black: {
-//       default: "#1A1A1A",
-//     }
-//   }
-// }
 var quoteColor = {
   r: 1,
   g: 0.369,
   b: 0.941,
   a: 1
-};
+}; // UI Creators
+
 function insertTokenText(_ref, layerName, title, text) {
   var x = _ref.x,
       y = _ref.y,
@@ -240,22 +198,62 @@ function createQuoteLine(x, y, elementWidth, isBorder) {
   border.thickness = 1;
   context.document.currentPage().addLayers([shape]);
 }
+function createTextLayer(name, stringValue) {
+  var textLayer = MSTextLayer.new();
+  textLayer.stringValue = stringValue;
+  textLayer.name = name;
+  textLayer.setTextColor(MSColor.colorWithRGBADictionary(quoteColor));
+  return textLayer;
+} // Token getters
+
+function getTokenVariable(colorsMap, wholeObject, property, component, hexColor) {
+  if (!colorsMap) {
+    return context.document.showMessage('✋🏻❌: Please load a decisions base colors file before continuing');
+  }
+
+  if (!wholeObject) {
+    return context.document.showMessage("\u270B\uD83C\uDFFB\u274C: Please load a decisions token file for ".concat(property, " before continuing"));
+  }
+
+  var prefix = '--token'; // if property has `-`, splits it
+
+  var hasDash = /-/;
+  var propertyPrefix = hasDash.test(property) ? property.split('-') : property; // gets the color from selected element
+
+  var selectedColor = colorsMap[hexColor].replace('--color-', '');
+  var states;
+  var propertyName;
+
+  if (propertyPrefix instanceof Array) {
+    states = wholeObject['token'][propertyPrefix[0]][propertyPrefix[1]][component];
+    propertyName = "".concat(propertyPrefix[0], "-").concat(propertyPrefix[1]);
+  } else {
+    states = wholeObject['token'][propertyPrefix][component];
+    propertyName = propertyPrefix;
+  }
+
+  var selectedState = Object.keys(states).find(function (state) {
+    return states[state] == selectedColor;
+  });
+  return "".concat(prefix, "-").concat(propertyName, "-").concat(component, "-").concat(selectedState);
+} // Base color getters
+
 function getFillHexColor(selection) {
   var layer = context.selection[0];
-  var selectedColor = getRGBColor("fill", layer);
+  var selectedColor = getRGBColor('fill', layer);
   var colorHex = selectedColor.immutableModelObject().hexValue().toString();
   return colorHex;
 }
 function getBorderHexColor(selection) {
   var layer = context.selection[0];
-  var selectedColor = getRGBColor("border", layer);
+  var selectedColor = getRGBColor('border', layer);
   var colorHex = selectedColor.immutableModelObject().hexValue().toString();
   return colorHex;
 }
 function getRGBColor(type, layer) {
   var color;
 
-  if (type === "fill") {
+  if (type === 'fill') {
     if (layer instanceof MSTextLayer) {
       color = layer.textColor();
     } else {
@@ -267,19 +265,26 @@ function getRGBColor(type, layer) {
 
   return color;
 }
+function getHexValueFromColorVariable(colorVar, baseColorsVariablesMap) {
+  var colorVarWithPrefix = "--color-".concat(colorVar);
+  return Object.keys(baseColorsVariablesMap).find(function (hexVal) {
+    if (baseColorsVariablesMap[hexVal] == colorVarWithPrefix) return hexVal;
+  });
+} // Checkers
+
 function colorChecker(color, callback) {
   if (typeof color === 'undefined') {
     return context.document.showMessage('🎨🚫: Non UI Kit color. Please make sure to use a valid color');
   } else {
     return callback();
   }
-}
+} // General scripts
+
 function getBaseColorsVariablesMapping() {
   // Gets the json data stored in global state
   var threadDictionary = NSThread.mainThread().threadDictionary();
   var importedBaseColors = threadDictionary.importedBaseColors;
-  if (!importedBaseColors) return context.document.showMessage('🗃👎🏻 No file imported. Please import your base colors file in `Import base colors file...`'); // console.log('importedBaseColors', importedBaseColors.baseColors.green)
-
+  if (!importedBaseColors) return context.document.showMessage('🗃👎🏻 No file imported. Please import your base colors file in `Import base colors file...`');
   var colorNames = {}; // gets default color variables
 
   Object.keys(importedBaseColors).map(function (colorGroupName) {
@@ -297,16 +302,8 @@ function getBaseColorsVariablesMapping() {
         colorNames[transformColorLightness(colorGroup.default, variationNameWithoutPercetageSign).toUpperCase()] = '--color-' + colorGroupName + '-' + variation;
       }
     });
-  }); // console.log('colorNames', colorNames)
-
+  });
   return colorNames;
-}
-function createTextLayer(name, stringValue) {
-  var textLayer = MSTextLayer.new();
-  textLayer.stringValue = stringValue;
-  textLayer.name = name;
-  textLayer.setTextColor(MSColor.colorWithRGBADictionary(quoteColor));
-  return textLayer;
 } // Color converters
 
 function transformColorLightness(hex, lightness) {
@@ -365,7 +362,7 @@ function hslToHex(hsl) {
   var g = rgbColor[1];
   var b = rgbColor[2]; // console.log('rgb', r, g, b)
 
-  return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 }
 
 function hslToRgb(h, s, l) {

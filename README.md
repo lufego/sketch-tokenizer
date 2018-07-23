@@ -18,9 +18,9 @@ This plugin comes to make both Designers and Developers's lives easier: you prov
 
 ## Usage
 
-1. Provide a JSON file with your project's [decision base colors](https://medium.com/eightshapes-llc/tokens-in-design-systems-25dd82d58421)
+1.  Provide a JSON file with your project's [decision base colors](https://medium.com/eightshapes-llc/tokens-in-design-systems-25dd82d58421)
 
-````json
+```json
 // variations are based on the color`s lightness channel
 // (E.g color(var(--color-green), lightness(25%)))
 {
@@ -40,20 +40,20 @@ This plugin comes to make both Designers and Developers's lives easier: you prov
       "30": "30%",
       "40": "40%",
       "98": "98%"
-    },
+    }
   }
 }
-````
+```
 
-2. Import this file on `Plugins > Tokenizer > Import base colors file...`
+2.  Import this file on `Plugins > Tokenizer > Import base colors file...`
 
 <img src="http://g.recordit.co/FK9uXWnFa7.gif" width="800" />
 
-3. Select an object in the Artboard
+3.  Select an object in the Artboard
 
-4. Go to `Plugins > Tokenizer > Get color variable > Fill Color` or `Border Color`
+4.  Go to `Plugins > Tokenizer > Get color variable > Fill Color` or `Border Color`
 
-5. 🎉 The corresponding design token to that label will be applied to the Artboard
+5.  🎉 The corresponding design token to that label will be applied to the Artboard
 
 ## Future updates
 

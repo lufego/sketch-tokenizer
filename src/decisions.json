@@ -1,4 +1,18 @@
 {
+  "token": {
+    "border": {
+      "color": {
+        "input": {
+          "default": "gray-60",
+          "disabled": "gray",
+          "readonly": "gray",
+          "active": "green",
+          "error": "red",
+          "warning": "orange"
+        }
+      }
+    }
+  },
   "baseColors": {
     "green": {
       "25": "25%",
