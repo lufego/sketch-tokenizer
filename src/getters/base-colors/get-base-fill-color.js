@@ -33,8 +33,11 @@ function getFillColorVariable(selection, text) {
   const position = {
     x: selection[0].absoluteRect().rulerX(),
     y: selection[0].absoluteRect().rulerY(),
+    midY: selection[0].absoluteRect().height() / 2,
     width: selection[0].absoluteRect().width()
   };
 
-  Utils.insertTokenText(position, 'Token', 'Fill color: ', text);
+  const layerName = String(selection[0].name());
+
+  Utils.insertTokenText(position, layerName, 'fill color', text);
 }

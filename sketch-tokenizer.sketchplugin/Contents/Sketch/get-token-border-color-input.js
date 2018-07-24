@@ -164,14 +164,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getHexValueFromColorVariable", function() { return getHexValueFromColorVariable; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "colorChecker", function() { return colorChecker; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getBaseColorsVariablesMapping", function() { return getBaseColorsVariablesMapping; });
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
-
-function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
-
 var quoteColor = {
   r: 1,
   g: 0.369,
@@ -179,45 +171,54 @@ var quoteColor = {
   a: 1
 }; // UI Creators
 
-function insertTokenText(position, layerName, title, text) {
+function insertTokenText(position, layerGroupName, title, text) {
   var isBorder = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
-  var textWithToken = createTextLayer(layerName, title + text); // pass the position to the text layer to be inserted
-
-  textWithToken.frame().x = +100; // pass the position to quote line
-
+  var capitalizedTitle = title[0].toUpperCase() + title.slice(1);
+  var textWithToken = createTextLayer("".concat(capitalizedTitle, ": ").concat(text));
   var quoteLine = createQuoteLine(position, isBorder); // var bounds = MSLayerGroup.groupBoundsForContainer(
   //   MSLayerArray.arrayWithLayers([quoteLine, textWithToken])
   // );
 
-  insertIntoGroup([textWithToken, quoteLine], position);
+  insertIntoGroup(layerGroupName, title, {
+    text: textWithToken,
+    line: quoteLine
+  }, position);
 }
-function insertIntoGroup(layers, position) {
-  var groupLayer = MSLayerGroup.new();
-  groupLayer.name = 'Token';
-  groupLayer.layers = _toConsumableArray(layers);
-  groupLayer.frame().x = position.x + position.width;
-  groupLayer.frame().y = position.y;
+function insertIntoGroup(layerGroupName, property, layers, position) {
+  var groupLayer = MSLayerGroup.new(); // to simulate the heigt/width
+
+  var bounds = MSLayerGroup.groupBoundsForContainer(MSLayerArray.arrayWithLayers([layers.line, layers.text])); // moves the text a bit further from object
+
+  layers.text.frame().x = 85;
+  groupLayer.name = "Token ".concat(property, " for ").concat(layerGroupName);
+  groupLayer.layers = [layers.line, layers.text];
+  groupLayer.resizeToFitChildrenWithOption(1);
+  groupLayer.frame().x = position.x + position.width - 5;
+  groupLayer.frame().y = position.y + position.midY - bounds.size.height / 2;
   var currentParentGroup = context.document.currentPage().currentArtboard() || context.document.currentPage();
   currentParentGroup.addLayers([groupLayer]);
 }
 function createQuoteLine(position, isBorder) {
-  // if its a border, we want the quote line to touch it, otherwise touch fill
+  var lineHeight = 14;
+  var lineHeightMidY = lineHeight / 2;
+  var lineWidth = 85; // if its a border, we want the quote line to touch it, otherwise touch fill
+
   var touchOffset = isBorder ? 0 : 5; // if its a border, we want the quote line to start from the same point as fill quoted line
 
-  var startPointOffset = isBorder ? 30 : 0;
+  var startingPointOffset = isBorder ? 30 : 0;
   var path = NSBezierPath.bezierPath();
-  path.moveToPoint(NSMakePoint(0, 100));
-  path.lineToPoint(NSMakePoint(+100, 0));
+  path.moveToPoint(NSMakePoint(lineWidth - touchOffset, lineHeightMidY + startingPointOffset));
+  path.lineToPoint(NSMakePoint(0, lineHeightMidY));
   var shape = MSShapeGroup.shapeWithBezierPath(MSPath.pathWithBezierPath(path));
   var border = shape.style().addStylePartOfType(1);
   border.color = MSColor.colorWithRGBADictionary(quoteColor);
   border.thickness = 1;
   return shape;
 }
-function createTextLayer(name, stringValue) {
+function createTextLayer(stringValue) {
   var textLayer = MSTextLayer.new();
   textLayer.stringValue = stringValue;
-  textLayer.name = name;
+  textLayer.name = 'Text';
   textLayer.setTextColor(MSColor.colorWithRGBADictionary(quoteColor));
   return textLayer;
 } // Token getters

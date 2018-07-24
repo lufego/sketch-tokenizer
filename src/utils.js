@@ -4,32 +4,43 @@ const quoteColor = { r: 1, g: 0.369, b: 0.941, a: 1 };
 
 export function insertTokenText(
   position,
-  layerName,
+  layerGroupName,
   title,
   text,
   isBorder = false
 ) {
-  const textWithToken = createTextLayer(layerName, title + text);
-  // pass the position to the text layer to be inserted
-  textWithToken.frame().x = +100;
-
-  // pass the position to quote line
+  const capitalizedTitle = title[0].toUpperCase() + title.slice(1);
+  const textWithToken = createTextLayer(`${capitalizedTitle}: ${text}`);
   const quoteLine = createQuoteLine(position, isBorder);
 
   // var bounds = MSLayerGroup.groupBoundsForContainer(
   //   MSLayerArray.arrayWithLayers([quoteLine, textWithToken])
   // );
 
-  insertIntoGroup([textWithToken, quoteLine], position);
+  insertIntoGroup(
+    layerGroupName,
+    title,
+    { text: textWithToken, line: quoteLine },
+    position
+  );
 }
 
-export function insertIntoGroup(layers, position) {
+export function insertIntoGroup(layerGroupName, property, layers, position) {
   var groupLayer = MSLayerGroup.new();
-  groupLayer.name = 'Token';
-  groupLayer.layers = [...layers];
-  groupLayer.frame().x = position.x + position.width;
-  groupLayer.frame().y = position.y;
 
+  // to simulate the heigt/width
+  var bounds = MSLayerGroup.groupBoundsForContainer(
+    MSLayerArray.arrayWithLayers([layers.line, layers.text])
+  );
+
+  // moves the text a bit further from object
+  layers.text.frame().x = 85;
+  groupLayer.name = `Token ${property} for ${layerGroupName}`;
+  groupLayer.layers = [layers.line, layers.text];
+
+  groupLayer.resizeToFitChildrenWithOption(1);
+  groupLayer.frame().x = position.x + position.width - 5;
+  groupLayer.frame().y = position.y + position.midY - bounds.size.height / 2;
   var currentParentGroup =
     context.document.currentPage().currentArtboard() ||
     context.document.currentPage();
@@ -37,14 +48,20 @@ export function insertIntoGroup(layers, position) {
 }
 
 export function createQuoteLine(position, isBorder) {
+  const lineHeight = 14;
+  const lineHeightMidY = lineHeight / 2;
+  const lineWidth = 85;
+
   // if its a border, we want the quote line to touch it, otherwise touch fill
   const touchOffset = isBorder ? 0 : 5;
 
   // if its a border, we want the quote line to start from the same point as fill quoted line
-  const startPointOffset = isBorder ? 30 : 0;
+  const startingPointOffset = isBorder ? 30 : 0;
   var path = NSBezierPath.bezierPath();
-  path.moveToPoint(NSMakePoint(0, 100));
-  path.lineToPoint(NSMakePoint(+100, 0));
+  path.moveToPoint(
+    NSMakePoint(lineWidth - touchOffset, lineHeightMidY + startingPointOffset)
+  );
+  path.lineToPoint(NSMakePoint(0, lineHeightMidY));
 
   var shape = MSShapeGroup.shapeWithBezierPath(MSPath.pathWithBezierPath(path));
   var border = shape.style().addStylePartOfType(1);
@@ -54,10 +71,10 @@ export function createQuoteLine(position, isBorder) {
   return shape;
 }
 
-export function createTextLayer(name, stringValue) {
+export function createTextLayer(stringValue) {
   var textLayer = MSTextLayer.new();
   textLayer.stringValue = stringValue;
-  textLayer.name = name;
+  textLayer.name = 'Text';
   textLayer.setTextColor(MSColor.colorWithRGBADictionary(quoteColor));
   return textLayer;
 }
