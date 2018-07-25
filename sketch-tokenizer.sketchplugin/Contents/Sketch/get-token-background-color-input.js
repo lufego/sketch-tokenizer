@@ -86,7 +86,7 @@ var exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/menu-identify/base-colors/get-base-border-color.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/menu-identify/tokens/background/get-token-background-color-input.js");
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -221,16 +221,16 @@ function hue2rgb(m1, m2, hue) {
 
 /***/ }),
 
-/***/ "./src/menu-identify/base-colors/get-base-border-color.js":
-/*!****************************************************************!*\
-  !*** ./src/menu-identify/base-colors/get-base-border-color.js ***!
-  \****************************************************************/
+/***/ "./src/menu-identify/tokens/background/get-token-background-color-input.js":
+/*!*********************************************************************************!*\
+  !*** ./src/menu-identify/tokens/background/get-token-background-color-input.js ***!
+  \*********************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-var Utils = __webpack_require__(/*! ./../../utils.js */ "./src/utils.js"); // My plugin (command shift s)
+var Utils = __webpack_require__(/*! ./../../../utils.js */ "./src/utils.js"); // My plugin (command shift s)
 
 
 /* harmony default export */ __webpack_exports__["default"] = (function (context) {
@@ -246,19 +246,20 @@ var Utils = __webpack_require__(/*! ./../../utils.js */ "./src/utils.js"); // My
     return context.document.showMessage('❌: Please use `Tokenizer > Get Tone` for texts');
   }
 
-  var colorMapping = Utils.getBaseColorsVariablesMapping();
-  var currentSelectedColor = Utils.getBorderHexColor(selection).toString().toUpperCase();
-  var color = colorMapping['#' + currentSelectedColor];
+  var colorMapping = Utils.getBaseColorsVariablesMapping(); // console.log('colorMapping', colorMapping);
+
+  var currentSelectedColor = Utils.getFillHexColor(selection).toString().toUpperCase();
+  var color = colorMapping["#".concat(currentSelectedColor)];
 
   var callback = function callback() {
-    return getBorderColorVariable(selection, color);
+    return insertTokenrVariable(selection, "#".concat(currentSelectedColor));
   }; // checks if color belongs to UI Kit, if not returns an error
 
 
   Utils.colorChecker(color, callback);
 });
 
-function getBorderColorVariable(selection, text) {
+function insertTokenrVariable(selection, hexColor) {
   var position = {
     x: selection[0].absoluteRect().rulerX(),
     y: selection[0].absoluteRect().rulerY(),
@@ -266,7 +267,8 @@ function getBorderColorVariable(selection, text) {
     width: selection[0].absoluteRect().width()
   };
   var layerName = String(selection[0].name());
-  Utils.insertTokenText(position, layerName, 'border color', text, true);
+  var tokenText = Utils.getTokenVariable('background-color', 'input', hexColor);
+  Utils.insertTokenText(position, layerName, 'token input background color', tokenText);
 }
 
 /***/ }),
@@ -557,4 +559,4 @@ function readFileAsText(path) {
 }
 that['onRun'] = __skpm_run.bind(this, 'default')
 
-//# sourceMappingURL=get-base-border-color.js.map
+//# sourceMappingURL=get-token-background-color-input.js.map

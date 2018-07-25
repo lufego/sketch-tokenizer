@@ -86,7 +86,7 @@ var exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/getters/base-colors/get-base-fill-color.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/menu-identify/base-colors/get-base-fill-color.js");
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -120,7 +120,6 @@ function transformColorLightness(hex, lightness) {
   var colorRgbTransformed = HSLtoRGB(colorHsl);
   var colorHslTransformed = RGBtoHSL(colorRgbTransformed);
   var colorHex = HSLtoHEX(colorHslTransformed);
-  console.log('colorHex', colorHex);
   return colorHex;
 }
 
@@ -222,10 +221,10 @@ function hue2rgb(m1, m2, hue) {
 
 /***/ }),
 
-/***/ "./src/getters/base-colors/get-base-fill-color.js":
-/*!********************************************************!*\
-  !*** ./src/getters/base-colors/get-base-fill-color.js ***!
-  \********************************************************/
+/***/ "./src/menu-identify/base-colors/get-base-fill-color.js":
+/*!**************************************************************!*\
+  !*** ./src/menu-identify/base-colors/get-base-fill-color.js ***!
+  \**************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -277,7 +276,7 @@ function getFillColorVariable(selection, text) {
 /*!**********************!*\
   !*** ./src/utils.js ***!
   \**********************/
-/*! exports provided: insertTokenText, insertIntoGroup, createQuoteLine, createTextLayer, getTokenVariable, getFillHexColor, getBorderHexColor, getRGBColor, getHexValueFromColorVariable, colorChecker, getBaseColorsVariablesMapping */
+/*! exports provided: insertTokenText, insertIntoGroup, createQuoteLine, createTextLayer, getTokenVariable, getFillHexColor, getBorderHexColor, getRGBColor, getHexValueFromColorVariable, colorChecker, getBaseColorsVariablesMapping, importFile */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -293,6 +292,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getHexValueFromColorVariable", function() { return getHexValueFromColorVariable; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "colorChecker", function() { return colorChecker; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getBaseColorsVariablesMapping", function() { return getBaseColorsVariablesMapping; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "importFile", function() { return importFile; });
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 var ColorConverter = __webpack_require__(/*! ./converters/colors.js */ "./src/converters/colors.js");
 
 var quoteColor = {
@@ -300,7 +304,9 @@ var quoteColor = {
   g: 0.369,
   b: 0.941,
   a: 1
-}; // UI Creators
+};
+var lineHeight = 14;
+var lineWidth = 85; // UI Creators
 
 function insertTokenText(position, layerGroupName, title, text) {
   var isBorder = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
@@ -313,32 +319,39 @@ function insertTokenText(position, layerGroupName, title, text) {
   insertIntoGroup(layerGroupName, title, {
     text: textWithToken,
     line: quoteLine
-  }, position);
+  }, position, isBorder);
 }
-function insertIntoGroup(layerGroupName, property, layers, position) {
+function insertIntoGroup(layerGroupName, property, layers, position, isBorder) {
   var groupLayer = MSLayerGroup.new(); // to simulate the heigt/width
 
-  var bounds = MSLayerGroup.groupBoundsForContainer(MSLayerArray.arrayWithLayers([layers.line, layers.text])); // moves the text a bit further from object
+  var bounds = MSLayerGroup.groupBoundsForContainer(MSLayerArray.arrayWithLayers([layers.line, layers.text])); // if its a border, we want the quote line to touch it, otherwise touch fill
 
-  layers.text.frame().x = 85;
+  var touchOffset = isBorder ? 0 : 5; // if its a border TOKEN, we want the quote line to start from the same point as fill quoted line
+
+  var startingPointOffset = isBorder ? lineHeight : 0; // spacing between line and text
+
+  var spacing = 4; // moves the text a bit further from object
+
+  layers.text.frame().x = lineWidth + spacing;
+
+  if (isBorder) {
+    layers.text.frame().y = -lineHeight;
+  }
+
   groupLayer.name = "Token ".concat(property, " for ").concat(layerGroupName);
   groupLayer.layers = [layers.line, layers.text];
   groupLayer.resizeToFitChildrenWithOption(1);
-  groupLayer.frame().x = position.x + position.width - 5;
-  groupLayer.frame().y = position.y + position.midY - bounds.size.height / 2;
+  groupLayer.frame().x = position.x + position.width - touchOffset;
+  groupLayer.frame().y = position.y + position.midY - bounds.size.height / 2 - startingPointOffset;
   var currentParentGroup = context.document.currentPage().currentArtboard() || context.document.currentPage();
   currentParentGroup.addLayers([groupLayer]);
 }
 function createQuoteLine(position, isBorder) {
-  var lineHeight = 14;
-  var lineHeightMidY = lineHeight / 2;
-  var lineWidth = 85; // if its a border, we want the quote line to touch it, otherwise touch fill
+  var lineHeightMidY = lineHeight / 2; // if its a border TOKEN, we want the quote line to start from the same point as fill quoted line
 
-  var touchOffset = isBorder ? 0 : 5; // if its a border, we want the quote line to start from the same point as fill quoted line
-
-  var startingPointOffset = isBorder ? 30 : 0;
+  var startingPointOffset = isBorder ? 15 : 0;
   var path = NSBezierPath.bezierPath();
-  path.moveToPoint(NSMakePoint(lineWidth - touchOffset, lineHeightMidY + startingPointOffset));
+  path.moveToPoint(NSMakePoint(lineWidth, lineHeightMidY - startingPointOffset));
   path.lineToPoint(NSMakePoint(0, lineHeightMidY));
   var shape = MSShapeGroup.shapeWithBezierPath(MSPath.pathWithBezierPath(path));
   var border = shape.style().addStylePartOfType(1);
@@ -354,35 +367,50 @@ function createTextLayer(stringValue) {
   return textLayer;
 } // Token getters
 
-function getTokenVariable(colorsMap, wholeObject, property, component, hexColor) {
-  if (!colorsMap) {
-    return context.document.showMessage('✋🏻❌: Please load a decisions base colors file before continuing');
-  }
-
-  if (!wholeObject) {
-    return context.document.showMessage("\u270B\uD83C\uDFFB\u274C: Please load a decisions token file for ".concat(property, " before continuing"));
-  }
-
+function getTokenVariable(property, component, hexColor) {
+  var baseColorsMap = getBaseColorsVariablesMapping();
   var prefix = '--token'; // if property has `-`, splits it
 
   var hasDash = /-/;
-  var propertyPrefix = hasDash.test(property) ? property.split('-') : property; // gets the color from selected element
-
-  var selectedColor = colorsMap[hexColor].replace('--color-', '');
+  var propertyPrefix = hasDash.test(property) ? property.split('-') : property;
   var states;
-  var propertyName;
+  var decisionsFile;
+  var propertyName; // if the propery is passed with dash (E.g border-color)
 
   if (propertyPrefix instanceof Array) {
-    states = wholeObject['token'][propertyPrefix[0]][propertyPrefix[1]][component];
+    decisionsFile = getDecisionsJson(propertyPrefix[0]);
+
+    if (!decisionsFile) {
+      return context.document.showMessage("\u270B\uD83C\uDFFB\u274C: Please load a decisions token file for ".concat(property, " before continuing"));
+    }
+
+    states = decisionsFile[propertyPrefix[1]][component];
     propertyName = "".concat(propertyPrefix[0], "-").concat(propertyPrefix[1]);
   } else {
-    states = wholeObject['token'][propertyPrefix][component];
+    decisionsFile = getDecisionsJson(propertyPrefix);
+
+    if (!decisionsFile) {
+      return context.document.showMessage("\u270B\uD83C\uDFFB\u274C: Please load a decisions token file for ".concat(property, " before continuing"));
+    }
+
+    states = decisionsFile[propertyPrefix][component];
     propertyName = propertyPrefix;
   }
 
+  if (!baseColorsMap) {
+    return context.document.showMessage('✋🏻❌: Please load a decisions base colors file before continuing');
+  } // gets the color from selected element
+
+
+  var selectedColor = baseColorsMap[hexColor].replace('--color-', '');
   var selectedState = Object.keys(states).find(function (state) {
     return states[state] == selectedColor;
   });
+
+  if (!selectedState) {
+    return context.document.showMessage('🎨🚫: Non-recognized token color. Please make sure to use a valid color for this token');
+  }
+
   return "".concat(prefix, "-").concat(propertyName, "-").concat(component, "-").concat(selectedState);
 } // Base color getters
 
@@ -392,6 +420,14 @@ function getFillHexColor(selection) {
   var colorHex = selectedColor.immutableModelObject().hexValue().toString();
   return colorHex;
 }
+
+function getDecisionsJson(object) {
+  // Gets the json data stored in global state
+  var threadDictionary = NSThread.mainThread().threadDictionary();
+  var decisions = threadDictionary[object];
+  return decisions;
+}
+
 function getBorderHexColor(selection) {
   var layer = context.selection[0];
   var selectedColor = getRGBColor('border', layer);
@@ -430,29 +466,85 @@ function colorChecker(color, callback) {
 
 function getBaseColorsVariablesMapping() {
   // Gets the json data stored in global state
-  var threadDictionary = NSThread.mainThread().threadDictionary();
-  var importedBaseColors = threadDictionary.importedBaseColors;
+  var importedBaseColors = getDecisionsJson('baseColors');
   if (!importedBaseColors) return context.document.showMessage('🗃👎🏻 No file imported. Please import your base colors file in `Import base colors file...`');
   var colorNames = {}; // gets default color variables
 
   Object.keys(importedBaseColors).map(function (colorGroupName) {
-    // console.log('colorGroupName', colorGroupName)
     var colorGroup = importedBaseColors[colorGroupName];
     var colorDefaultName = colorGroup.default;
-    colorNames[colorDefaultName.toString().toUpperCase()] = '--color-' + colorGroupName; // console.log('colorGroup.default', colorGroup.default);
-
+    colorNames[colorDefaultName.toString().toUpperCase()] = '--color-' + colorGroupName;
     Object.keys(colorGroup).forEach(function (variation) {
       // filters out default values
       if (variation !== 'default') {
         var variationName = colorGroup[variation];
         var variationNameWithoutPercetageSign = variationName.toString().replace('%', '');
-        console.log('names', colorGroup.default, variationNameWithoutPercetageSign); // console.log('colorGroup.default', colorGroup.default)
-
         colorNames[ColorConverter.transformColorLightness(colorGroup.default, variationNameWithoutPercetageSign).toUpperCase()] = '--color-' + colorGroupName + '-' + variation;
       }
     });
   });
   return colorNames;
+} // importers
+
+function importFile(fileName, objName) {
+  //ask for JSON file path, passing the last location if available
+  var dataPath = askForJSON('lastJSONPath', fileName);
+  if (!dataPath) return; //load json data
+
+  var jsonData = loadJSONData(dataPath);
+  if (!jsonData) return; //get root dir used when populating local images
+
+  var jsonDir = NSString.stringWithString(dataPath).stringByDeletingLastPathComponent();
+  var threadDictionary = NSThread.mainThread().threadDictionary();
+  threadDictionary[objName] = _objectSpread({}, jsonData);
+}
+
+function askForJSON(path, fileName) {
+  //create panel
+  var panel = NSOpenPanel.openPanel(); //set panel properties
+
+  panel.setTitle('Select JSON');
+  panel.setMessage("Please select the JSON file for ".concat(fileName));
+  panel.setPrompt('Select');
+  panel.setCanCreateDirectories(false);
+  panel.setCanChooseFiles(true);
+  panel.setCanChooseDirectories(false);
+  panel.setAllowsMultipleSelection(false);
+  panel.setShowsHiddenFiles(false);
+  panel.setExtensionHidden(false); //set initial panel path
+
+  if (path) {
+    panel.setDirectoryURL(NSURL.fileURLWithPath(path));
+  } else {
+    panel.setDirectoryURL(NSURL.fileURLWithPath('/Users/' + NSUserName()));
+  } //show panel
+
+
+  var pressedButton = panel.runModal();
+
+  if (pressedButton == NSOKButton) {
+    return panel.URL().path();
+  }
+}
+
+function loadJSONData(path) {
+  //load contents
+  var contents = readFileAsText(path); //get data from JSON
+
+  var data;
+
+  try {
+    data = JSON.parse(contents);
+  } catch (e) {
+    context.document.showMessage("There was an error parsing data. Please make sure it's valid.");
+    return;
+  }
+
+  return data;
+}
+
+function readFileAsText(path) {
+  return NSString.stringWithContentsOfFile_encoding_error(path, NSUTF8StringEncoding, false);
 }
 
 /***/ })

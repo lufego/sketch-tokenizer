@@ -11,7 +11,6 @@ export function transformColorLightness(hex, lightness) {
   const colorRgbTransformed = HSLtoRGB(colorHsl);
   const colorHslTransformed = RGBtoHSL(colorRgbTransformed);
   const colorHex = HSLtoHEX(colorHslTransformed);
-  console.log('colorHex', colorHex);
   return colorHex;
 }
 

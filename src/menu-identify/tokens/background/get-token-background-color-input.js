@@ -1,4 +1,4 @@
-const Utils = require('./../../utils.js');
+const Utils = require('./../../../utils.js');
 
 // My plugin (command shift s)
 export default function(context) {
@@ -20,25 +20,35 @@ export default function(context) {
   const currentSelectedColor = Utils.getFillHexColor(selection)
     .toString()
     .toUpperCase();
+  const color = colorMapping[`#${currentSelectedColor}`];
 
-  const color = colorMapping['#' + currentSelectedColor];
-
-  const callback = () => getFillColorVariable(selection, color);
+  const callback = () =>
+    insertTokenrVariable(selection, `#${currentSelectedColor}`);
 
   // checks if color belongs to UI Kit, if not returns an error
   Utils.colorChecker(color, callback);
 }
 
-function getFillColorVariable(selection, text) {
-  // gets the position of selection
-  var x = selection[0].frame().x();
-  var selectedElementWidth = selection[0].frame().width();
-  var midY = selection[0].frame().midY();
-
+function insertTokenrVariable(selection, hexColor) {
   const position = {
-    x,
-    y: midY,
-    width: selectedElementWidth
+    x: selection[0].absoluteRect().rulerX(),
+    y: selection[0].absoluteRect().rulerY(),
+    midY: selection[0].absoluteRect().height() / 2,
+    width: selection[0].absoluteRect().width()
   };
-  Utils.insertTokenText(position, 'Token', 'Fill color: ', text);
+
+  const layerName = String(selection[0].name());
+
+  const tokenText = Utils.getTokenVariable(
+    'background-color',
+    'input',
+    hexColor
+  );
+
+  Utils.insertTokenText(
+    position,
+    layerName,
+    'token input background color',
+    tokenText
+  );
 }

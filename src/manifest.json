@@ -7,30 +7,53 @@
       "name": "Fill color",
       "identifier": "base-fill-color",
       "shortcut": "ctrl shift w",
-      "script": "./getters/base-colors/get-base-fill-color.js"
+      "script": "./menu-identify/base-colors/get-base-fill-color.js"
     },
     {
       "name": "Border color",
       "identifier": "base-border-color",
       "shortcut": "ctrl shift b",
-      "script": "./getters/base-colors/get-base-border-color.js"
-    },
-    {
-      "name": "Import decisions file...",
-      "identifier": "import-decisions-file",
-      "shortcut": "ctrl shift i",
-      "script": "./import-decisions-file.js"
+      "script": "./menu-identify/base-colors/get-base-border-color.js"
     },
     {
       "name": "Input",
       "identifier": "token-border-color-input",
-      "script": "./getters/tokens/get-token-border-color-input.js"
+      "script": "./menu-identify/tokens/border/get-token-border-color-input.js"
+    },
+    {
+      "name": "Input",
+      "identifier": "token-background-color-input",
+      "script":
+        "./menu-identify/tokens/background/get-token-background-color-input.js"
+    },
+    {
+      "name": "Import base colors decisions file...",
+      "identifier": "import-base-colors-decisions-file",
+      "shortcut": "ctrl shift i",
+      "script": "./menu-import/import-base-colors-decisions-file.js"
+    },
+    {
+      "name": "Import borders decisions file...",
+      "identifier": "import-token-borders-decisions-file",
+      "script": "./menu-import/import-token-borders-decisions-file.js"
+    },
+    {
+      "name": "Import backgrounds decisions file...",
+      "identifier": "import-token-backgrounds-decisions-file",
+      "script": "./menu-import/import-token-backgrounds-decisions-file.js"
     }
   ],
   "menu": {
     "title": "Tokenizer",
     "items": [
-      "import-decisions-file",
+      {
+        "title": "Load data",
+        "items": [
+          "import-base-colors-decisions-file",
+          "import-token-borders-decisions-file",
+          "import-token-backgrounds-decisions-file"
+        ]
+      },
       {
         "title": "Identify",
         "items": [
@@ -44,6 +67,10 @@
               {
                 "title": "Border color",
                 "items": ["token-border-color-input"]
+              },
+              {
+                "title": "Background color",
+                "items": ["token-background-color-input"]
               }
             ]
           }

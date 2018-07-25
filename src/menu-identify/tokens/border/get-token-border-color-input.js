@@ -1,4 +1,4 @@
-const Utils = require('./../../utils.js');
+const Utils = require('./../../../utils.js');
 
 // My plugin (command shift s)
 export default function(context) {
@@ -16,28 +16,36 @@ export default function(context) {
   }
 
   const colorMapping = Utils.getBaseColorsVariablesMapping();
+  // console.log('colorMapping', colorMapping);
   const currentSelectedColor = Utils.getBorderHexColor(selection)
     .toString()
     .toUpperCase();
+  const color = colorMapping[`#${currentSelectedColor}`];
 
-  const color = colorMapping['#' + currentSelectedColor];
-
-  const callback = () => getBorderColorVariable(selection, color);
+  const callback = () =>
+    insertTokenrVariable(selection, `#${currentSelectedColor}`);
 
   // checks if color belongs to UI Kit, if not returns an error
   Utils.colorChecker(color, callback);
 }
 
-function getBorderColorVariable(selection, text) {
-  // gets the position of selection
-  var x = selection[0].frame().x();
-  var selectedElementWidth = selection[0].frame().width();
-  var midY = selection[0].frame().midY();
-
+function insertTokenrVariable(selection, hexColor) {
   const position = {
-    x,
-    y: midY - 30,
-    width: selectedElementWidth
+    x: selection[0].absoluteRect().rulerX(),
+    y: selection[0].absoluteRect().rulerY(),
+    midY: selection[0].absoluteRect().height() / 2,
+    width: selection[0].absoluteRect().width()
   };
-  Utils.insertTokenText(position, 'Token', 'Border color: ', text, true);
+
+  const layerName = String(selection[0].name());
+
+  const tokenText = Utils.getTokenVariable('border-color', 'input', hexColor);
+
+  Utils.insertTokenText(
+    position,
+    layerName,
+    'token input border color',
+    tokenText,
+    true
+  );
 }

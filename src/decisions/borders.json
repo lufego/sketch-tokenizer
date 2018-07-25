@@ -1,0 +1,15 @@
+{
+  "color": {
+    "input": {
+      "pristine": "gray-60",
+      "disabled": "gray",
+      "readonly": "gray",
+      "focus": "green",
+      "error": "red",
+      "warning": "orange"
+    }
+  },
+  "radius": {
+    "input": 6
+  }
+}

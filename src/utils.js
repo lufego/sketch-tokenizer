@@ -1,6 +1,8 @@
 const ColorConverter = require('./converters/colors.js');
 
 const quoteColor = { r: 1, g: 0.369, b: 0.941, a: 1 };
+const lineHeight = 14;
+const lineWidth = 85;
 
 // UI Creators
 
@@ -23,11 +25,18 @@ export function insertTokenText(
     layerGroupName,
     title,
     { text: textWithToken, line: quoteLine },
-    position
+    position,
+    isBorder
   );
 }
 
-export function insertIntoGroup(layerGroupName, property, layers, position) {
+export function insertIntoGroup(
+  layerGroupName,
+  property,
+  layers,
+  position,
+  isBorder
+) {
   var groupLayer = MSLayerGroup.new();
 
   // to simulate the heigt/width
@@ -35,14 +44,28 @@ export function insertIntoGroup(layerGroupName, property, layers, position) {
     MSLayerArray.arrayWithLayers([layers.line, layers.text])
   );
 
+  // if its a border, we want the quote line to touch it, otherwise touch fill
+  const touchOffset = isBorder ? 0 : 5;
+
+  // if its a border TOKEN, we want the quote line to start from the same point as fill quoted line
+  const startingPointOffset = isBorder ? lineHeight : 0;
+
+  // spacing between line and text
+  const spacing = 4;
+
   // moves the text a bit further from object
-  layers.text.frame().x = 85;
+  layers.text.frame().x = lineWidth + spacing;
+  if (isBorder) {
+    layers.text.frame().y = -lineHeight;
+  }
+
   groupLayer.name = `Token ${property} for ${layerGroupName}`;
   groupLayer.layers = [layers.line, layers.text];
 
   groupLayer.resizeToFitChildrenWithOption(1);
-  groupLayer.frame().x = position.x + position.width - 5;
-  groupLayer.frame().y = position.y + position.midY - bounds.size.height / 2;
+  groupLayer.frame().x = position.x + position.width - touchOffset;
+  groupLayer.frame().y =
+    position.y + position.midY - bounds.size.height / 2 - startingPointOffset;
   var currentParentGroup =
     context.document.currentPage().currentArtboard() ||
     context.document.currentPage();
@@ -50,18 +73,13 @@ export function insertIntoGroup(layerGroupName, property, layers, position) {
 }
 
 export function createQuoteLine(position, isBorder) {
-  const lineHeight = 14;
   const lineHeightMidY = lineHeight / 2;
-  const lineWidth = 85;
 
-  // if its a border, we want the quote line to touch it, otherwise touch fill
-  const touchOffset = isBorder ? 0 : 5;
-
-  // if its a border, we want the quote line to start from the same point as fill quoted line
-  const startingPointOffset = isBorder ? 30 : 0;
+  // if its a border TOKEN, we want the quote line to start from the same point as fill quoted line
+  const startingPointOffset = isBorder ? 15 : 0;
   var path = NSBezierPath.bezierPath();
   path.moveToPoint(
-    NSMakePoint(lineWidth - touchOffset, lineHeightMidY + startingPointOffset)
+    NSMakePoint(lineWidth, lineHeightMidY - startingPointOffset)
   );
   path.lineToPoint(NSMakePoint(0, lineHeightMidY));
 
@@ -83,25 +101,8 @@ export function createTextLayer(stringValue) {
 
 // Token getters
 
-export function getTokenVariable(
-  colorsMap,
-  wholeObject,
-  property,
-  component,
-  hexColor
-) {
-  if (!colorsMap) {
-    return context.document.showMessage(
-      '✋🏻❌: Please load a decisions base colors file before continuing'
-    );
-  }
-
-  if (!wholeObject) {
-    return context.document.showMessage(
-      `✋🏻❌: Please load a decisions token file for ${property} before continuing`
-    );
-  }
-
+export function getTokenVariable(property, component, hexColor) {
+  const baseColorsMap = getBaseColorsVariablesMapping();
   const prefix = '--token';
 
   // if property has `-`, splits it
@@ -110,23 +111,49 @@ export function getTokenVariable(
     ? property.split('-')
     : property;
 
-  // gets the color from selected element
-  const selectedColor = colorsMap[hexColor].replace('--color-', '');
-
   let states;
+  let decisionsFile;
   let propertyName;
+
+  // if the propery is passed with dash (E.g border-color)
   if (propertyPrefix instanceof Array) {
-    states =
-      wholeObject['token'][propertyPrefix[0]][propertyPrefix[1]][component];
+    decisionsFile = getDecisionsJson(propertyPrefix[0]);
+    if (!decisionsFile) {
+      return context.document.showMessage(
+        `✋🏻❌: Please load a decisions token file for ${property} before continuing`
+      );
+    }
+    states = decisionsFile[propertyPrefix[1]][component];
     propertyName = `${propertyPrefix[0]}-${propertyPrefix[1]}`;
   } else {
-    states = wholeObject['token'][propertyPrefix][component];
+    decisionsFile = getDecisionsJson(propertyPrefix);
+    if (!decisionsFile) {
+      return context.document.showMessage(
+        `✋🏻❌: Please load a decisions token file for ${property} before continuing`
+      );
+    }
+    states = decisionsFile[propertyPrefix][component];
     propertyName = propertyPrefix;
   }
+
+  if (!baseColorsMap) {
+    return context.document.showMessage(
+      '✋🏻❌: Please load a decisions base colors file before continuing'
+    );
+  }
+
+  // gets the color from selected element
+  const selectedColor = baseColorsMap[hexColor].replace('--color-', '');
 
   const selectedState = Object.keys(states).find(
     state => states[state] == selectedColor
   );
+
+  if (!selectedState) {
+    return context.document.showMessage(
+      '🎨🚫: Non-recognized token color. Please make sure to use a valid color for this token'
+    );
+  }
 
   return `${prefix}-${propertyName}-${component}-${selectedState}`;
 }
@@ -141,6 +168,13 @@ export function getFillHexColor(selection) {
     .hexValue()
     .toString();
   return colorHex;
+}
+
+function getDecisionsJson(object) {
+  // Gets the json data stored in global state
+  let threadDictionary = NSThread.mainThread().threadDictionary();
+  let decisions = threadDictionary[object];
+  return decisions;
 }
 
 export function getBorderHexColor(selection) {
@@ -200,8 +234,8 @@ export function colorChecker(color, callback) {
 
 export function getBaseColorsVariablesMapping() {
   // Gets the json data stored in global state
-  let threadDictionary = NSThread.mainThread().threadDictionary();
-  let importedBaseColors = threadDictionary.importedBaseColors;
+  const importedBaseColors = getDecisionsJson('baseColors');
+
   if (!importedBaseColors)
     return context.document.showMessage(
       '🗃👎🏻 No file imported. Please import your base colors file in `Import base colors file...`'
@@ -210,13 +244,10 @@ export function getBaseColorsVariablesMapping() {
   const colorNames = {};
   // gets default color variables
   Object.keys(importedBaseColors).map(colorGroupName => {
-    // console.log('colorGroupName', colorGroupName)
     const colorGroup = importedBaseColors[colorGroupName];
     const colorDefaultName = colorGroup.default;
     colorNames[colorDefaultName.toString().toUpperCase()] =
       '--color-' + colorGroupName;
-
-    // console.log('colorGroup.default', colorGroup.default);
 
     Object.keys(colorGroup).forEach(variation => {
       // filters out default values
@@ -225,12 +256,6 @@ export function getBaseColorsVariablesMapping() {
         const variationNameWithoutPercetageSign = variationName
           .toString()
           .replace('%', '');
-        console.log(
-          'names',
-          colorGroup.default,
-          variationNameWithoutPercetageSign
-        );
-        // console.log('colorGroup.default', colorGroup.default)
         colorNames[
           ColorConverter.transformColorLightness(
             colorGroup.default,
@@ -242,4 +267,79 @@ export function getBaseColorsVariablesMapping() {
     });
   });
   return colorNames;
+}
+
+// importers
+
+export function importFile(fileName, objName) {
+  //ask for JSON file path, passing the last location if available
+  let dataPath = askForJSON('lastJSONPath', fileName);
+  if (!dataPath) return;
+
+  //load json data
+  let jsonData = loadJSONData(dataPath);
+  if (!jsonData) return;
+
+  //get root dir used when populating local images
+  let jsonDir = NSString.stringWithString(
+    dataPath
+  ).stringByDeletingLastPathComponent();
+
+  let threadDictionary = NSThread.mainThread().threadDictionary();
+  threadDictionary[objName] = { ...jsonData };
+}
+
+function askForJSON(path, fileName) {
+  //create panel
+  let panel = NSOpenPanel.openPanel();
+
+  //set panel properties
+  panel.setTitle('Select JSON');
+  panel.setMessage(`Please select the JSON file for ${fileName}`);
+  panel.setPrompt('Select');
+  panel.setCanCreateDirectories(false);
+  panel.setCanChooseFiles(true);
+  panel.setCanChooseDirectories(false);
+  panel.setAllowsMultipleSelection(false);
+  panel.setShowsHiddenFiles(false);
+  panel.setExtensionHidden(false);
+
+  //set initial panel path
+  if (path) {
+    panel.setDirectoryURL(NSURL.fileURLWithPath(path));
+  } else {
+    panel.setDirectoryURL(NSURL.fileURLWithPath('/Users/' + NSUserName()));
+  }
+
+  //show panel
+  let pressedButton = panel.runModal();
+  if (pressedButton == NSOKButton) {
+    return panel.URL().path();
+  }
+}
+
+function loadJSONData(path) {
+  //load contents
+  let contents = readFileAsText(path);
+
+  //get data from JSON
+  let data;
+  try {
+    data = JSON.parse(contents);
+  } catch (e) {
+    context.document.showMessage(
+      "There was an error parsing data. Please make sure it's valid."
+    );
+    return;
+  }
+
+  return data;
+}
+
+function readFileAsText(path) {
+  return NSString.stringWithContentsOfFile_encoding_error(
+    path,
+    NSUTF8StringEncoding,
+    false
+  );
 }

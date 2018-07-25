@@ -86,7 +86,7 @@ var exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/menu-identify/base-colors/get-base-border-color.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/menu-import/import-token-borders-decisions-file.js");
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -221,53 +221,24 @@ function hue2rgb(m1, m2, hue) {
 
 /***/ }),
 
-/***/ "./src/menu-identify/base-colors/get-base-border-color.js":
+/***/ "./src/menu-import/import-token-borders-decisions-file.js":
 /*!****************************************************************!*\
-  !*** ./src/menu-identify/base-colors/get-base-border-color.js ***!
+  !*** ./src/menu-import/import-token-borders-decisions-file.js ***!
   \****************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-var Utils = __webpack_require__(/*! ./../../utils.js */ "./src/utils.js"); // My plugin (command shift s)
-
+var importFile = __webpack_require__(/*! ./../utils.js */ "./src/utils.js").importFile;
 
 /* harmony default export */ __webpack_exports__["default"] = (function (context) {
-  var selection = context.selection;
-  context.document.showMessage('Plugin 🏃');
+  var fileName = 'Border decisions'; // the value global state will hold
 
-  if (selection.length == 0) {
-    return context.document.showMessage('🗝🌈: Please select an object');
-  } // if its a text
-
-
-  if (selection[0] instanceof MSTextLayer) {
-    return context.document.showMessage('❌: Please use `Tokenizer > Get Tone` for texts');
-  }
-
-  var colorMapping = Utils.getBaseColorsVariablesMapping();
-  var currentSelectedColor = Utils.getBorderHexColor(selection).toString().toUpperCase();
-  var color = colorMapping['#' + currentSelectedColor];
-
-  var callback = function callback() {
-    return getBorderColorVariable(selection, color);
-  }; // checks if color belongs to UI Kit, if not returns an error
-
-
-  Utils.colorChecker(color, callback);
+  var objName = 'border';
+  importFile(fileName, objName);
+  context.document.showMessage("\uD83D\uDCE9\uD83C\uDF89: File for ".concat(fileName, " imported! Ready to use!"));
 });
-
-function getBorderColorVariable(selection, text) {
-  var position = {
-    x: selection[0].absoluteRect().rulerX(),
-    y: selection[0].absoluteRect().rulerY(),
-    midY: selection[0].absoluteRect().height() / 2,
-    width: selection[0].absoluteRect().width()
-  };
-  var layerName = String(selection[0].name());
-  Utils.insertTokenText(position, layerName, 'border color', text, true);
-}
 
 /***/ }),
 
@@ -557,4 +528,4 @@ function readFileAsText(path) {
 }
 that['onRun'] = __skpm_run.bind(this, 'default')
 
-//# sourceMappingURL=get-base-border-color.js.map
+//# sourceMappingURL=import-token-borders-decisions-file.js.map
